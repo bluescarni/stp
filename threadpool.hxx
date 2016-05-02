@@ -33,8 +33,8 @@
 /*    OTHER DEALINGS IN THE SOFTWARE.                                   */
 /*                                                                      */
 /************************************************************************/
-#ifndef VIGRA_THREADPOOL_HXX
-#define VIGRA_THREADPOOL_HXX
+#ifndef THREADPOOL_THREADPOOL_HXX
+#define THREADPOOL_THREADPOOL_HXX
 
 #include <algorithm>
 #include <atomic>
@@ -50,12 +50,8 @@
 #include <functional>
 #include <thread>
 
-#if defined(THREADPOOL_ENCLOSING_NAMESPACE)
-
-namespace THREADPOOL_ENCLOSING_NAMESPACE
+namespace threadpool
 {
-
-#endif
 
 /** \addtogroup ParallelProcessing
 */
@@ -688,10 +684,7 @@ inline void parallel_foreach(
 
 //@}
 
-#if defined(THREADPOOL_ENCLOSING_NAMESPACE)
-
 } // Close namespace.
 
-#endif
 
-#endif // VIGRA_THREADPOOL_HXX
+#endif // THREADPOOL_THREADPOOL_HXX
