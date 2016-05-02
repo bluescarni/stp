@@ -33,12 +33,14 @@
 /*    OTHER DEALINGS IN THE SOFTWARE.                                   */
 /*                                                                      */
 /************************************************************************/
+
 #ifndef THREADPOOL_THREADPOOL_HXX
 #define THREADPOOL_THREADPOOL_HXX
 
 #include <algorithm>
 #include <atomic>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <condition_variable>
 #include <future>
@@ -49,6 +51,7 @@
 #include <cmath>
 #include <functional>
 #include <thread>
+#include <numeric>
 
 namespace threadpool
 {
@@ -393,7 +396,7 @@ ThreadPool::enqueue(F&& f)
 template<class ITER, class F>
 inline void parallel_foreach_impl(
     ThreadPool & pool,
-    const std::ptrdiff_t nItems,
+    const std::ptrdiff_t,
     ITER iter,
     ITER end,
     F && f,
@@ -402,7 +405,7 @@ inline void parallel_foreach_impl(
     std::ptrdiff_t workload = std::distance(iter, end);
     assert(workload == nItems || nItems == 0);
     const float workPerThread = float(workload)/pool.nThreads();
-    const std::ptrdiff_t chunkedWorkPerThread = std::max<std::ptrdiff_t>(roundi(workPerThread/3.0), 1);
+    const std::ptrdiff_t chunkedWorkPerThread = std::max<std::ptrdiff_t>(std::llround(workPerThread/3.0), 1);
 
     std::vector<std::future<void> > futures;
     for( ;iter<end; iter+=chunkedWorkPerThread)
@@ -443,7 +446,7 @@ inline void parallel_foreach_impl(
 
     std::ptrdiff_t workload = nItems;
     const float workPerThread = float(workload)/pool.nThreads();
-    const std::ptrdiff_t chunkedWorkPerThread = std::max<std::ptrdiff_t>(roundi(workPerThread/3.0), 1);
+    const std::ptrdiff_t chunkedWorkPerThread = std::max<std::ptrdiff_t>(std::llround(workPerThread/3.0), 1);
 
     std::vector<std::future<void> > futures;
     for(;;)
@@ -519,6 +522,7 @@ inline void parallel_foreach_single_thread(
     F && f,
     const std::ptrdiff_t nItems = 0
 ){
+    (void)nItems;
     std::ptrdiff_t n = 0;
     for (; begin != end; ++begin)
     {
@@ -667,8 +671,10 @@ inline void parallel_foreach(
     std::ptrdiff_t nItems,
     F && f)
 {
-    auto iter = range(nItems);
-    parallel_foreach(nThreads, iter, iter.end(), f, nItems);
+    std::vector<std::ptrdiff_t> range;
+    range.resize(nItems);
+    std::iota(range.begin(),range.end(),std::ptrdiff_t(0));
+    parallel_foreach(nThreads, range.begin(), range.end(), f, nItems);
 }
 
 
@@ -678,8 +684,10 @@ inline void parallel_foreach(
     std::ptrdiff_t nItems,
     F && f)
 {
-    auto iter = range(nItems);
-    parallel_foreach(threadpool, iter, iter.end(), f, nItems);
+    std::vector<std::ptrdiff_t> range;
+    range.resize(nItems);
+    std::iota(range.begin(),range.end(),std::ptrdiff_t(0));
+    parallel_foreach(threadpool, range.begin(), range.end(), f, nItems);
 }
 
 //@}
